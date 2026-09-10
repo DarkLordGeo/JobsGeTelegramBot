@@ -35,6 +35,11 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Manual runs (workflow_dispatch) always send the current data,
+          # bypassing the seen_jobs.json filter - useful for testing without
+          # editing that file by hand. Scheduled/push-triggered runs keep
+          # the normal new-jobs-only behavior.
+          FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' }}
         run: python notify.py
         working-directory: telegram_bot
 

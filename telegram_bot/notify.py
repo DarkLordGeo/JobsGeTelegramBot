@@ -9,6 +9,12 @@ listings, not the whole dataset every time.
 Required environment variables:
     TELEGRAM_BOT_TOKEN  - from @BotFather
     TELEGRAM_CHAT_ID    - the channel/group/user id to post to
+
+Optional:
+    FORCE_SEND          - if "true", sends every job in database/jobs_data.json
+                          regardless of seen_jobs.json (used for manual test
+                          runs - see .github/workflows/telegram_notify.yml,
+                          which sets this automatically on workflow_dispatch)
 """
 
 import json
@@ -112,18 +118,23 @@ def main():
 
     jobs = load_jobs()
     seen_ids = load_seen_ids()
+    force_send = os.environ.get("FORCE_SEND", "false").lower() == "true"
 
-    new_jobs = [job for job in jobs if job.get("job_id") not in seen_ids]
-    print(f"{len(jobs)} total jobs, {len(new_jobs)} new since last run.")
+    if force_send:
+        jobs_to_send = jobs
+        print(f"{len(jobs)} total jobs. FORCE_SEND is on - sending all of them.")
+    else:
+        jobs_to_send = [job for job in jobs if job.get("job_id") not in seen_ids]
+        print(f"{len(jobs)} total jobs, {len(jobs_to_send)} new since last run.")
 
-    if not new_jobs:
+    if not jobs_to_send:
         print("Nothing new to post.")
         return
 
-    grouped = group_by_category(new_jobs)
+    grouped = group_by_category(jobs_to_send)
 
     for category, category_jobs in grouped.items():
-        header = f"🆕 <b>{category}</b> ({len(category_jobs)} new)"
+        header = f"🆕 <b>{category}</b> ({len(category_jobs)})"
         lines = [format_job_line(job) for job in category_jobs]
         for message in chunk_message(header, lines):
             send_telegram_message(token, chat_id, message)
@@ -131,7 +142,7 @@ def main():
 
     all_ids = seen_ids | {job["job_id"] for job in jobs if job.get("job_id")}
     save_seen_ids(all_ids)
-    print(f"Posted {len(new_jobs)} new jobs across {len(grouped)} categories.")
+    print(f"Posted {len(jobs_to_send)} jobs across {len(grouped)} categories.")
 
 
 if __name__ == "__main__":
