@@ -40,6 +40,10 @@ jobs:
           # editing that file by hand. Scheduled/push-triggered runs keep
           # the normal new-jobs-only behavior.
           FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' }}
+          # Per-user category preferences, set by webhook_bot/app.py. If
+          # unset, notify.py just skips personalized delivery.
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
         run: python notify.py
         working-directory: telegram_bot
 

@@ -7,18 +7,22 @@ been posted in seen_jobs.json so re-runs only notify about genuinely new
 listings, not the whole dataset every time.
 
 Also sends personalized per-category messages to anyone who's set
-preferences via the webhook bot (webhook_bot/app.py) - see
-telegram_bot/subscribers.json, which that service maintains.
+preferences via the webhook bot (webhook_bot/app.py) - preferences live in
+Upstash Redis (a "subscribers" hash), which that service maintains.
 
 Required environment variables:
     TELEGRAM_BOT_TOKEN  - from @BotFather
     TELEGRAM_CHAT_ID    - the channel/group/user id to post to
 
 Optional:
-    FORCE_SEND          - if "true", sends every job in database/jobs_data.json
-                          regardless of seen_jobs.json (used for manual test
-                          runs - see .github/workflows/telegram_notify.yml,
-                          which sets this automatically on workflow_dispatch)
+    FORCE_SEND                - if "true", sends every job in
+                                database/jobs_data.json regardless of
+                                seen_jobs.json (used for manual test runs -
+                                see .github/workflows/telegram_notify.yml,
+                                which sets this automatically on
+                                workflow_dispatch)
+    UPSTASH_REDIS_REST_URL    - if unset, personalized delivery is skipped
+    UPSTASH_REDIS_REST_TOKEN  - (the channel broadcast still happens)
 """
 
 import json
@@ -35,7 +39,7 @@ from categorize import categorize, group_by_category
 REPO_ROOT = Path(__file__).resolve().parent.parent
 JOBS_DATA_PATH = REPO_ROOT / "database" / "jobs_data.json"
 SEEN_JOBS_PATH = Path(__file__).resolve().parent / "seen_jobs.json"
-SUBSCRIBERS_PATH = Path(__file__).resolve().parent / "subscribers.json"
+SUBSCRIBERS_KEY = "subscribers"  # Redis hash: chat_id -> JSON {"categories": [...]}
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 MAX_MESSAGE_LENGTH = 4096
@@ -69,10 +73,31 @@ def save_seen_ids(job_ids):
 
 
 def load_subscribers():
-    if not SUBSCRIBERS_PATH.exists():
+    """Return {chat_id: {"categories": [...]}} from Redis, or {} if Upstash
+    isn't configured (personalized delivery is optional - the channel
+    broadcast works regardless)."""
+    url = os.environ.get("UPSTASH_REDIS_REST_URL")
+    token = os.environ.get("UPSTASH_REDIS_REST_TOKEN")
+    if not url or not token:
         return {}
-    with open(SUBSCRIBERS_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+
+    response = requests.post(
+        url,
+        headers={"Authorization": f"Bearer {token}"},
+        json=["HGETALL", SUBSCRIBERS_KEY],
+        timeout=REQUEST_TIMEOUT,
+    )
+    response.raise_for_status()
+    flat = response.json()["result"] or []  # [field1, value1, field2, value2, ...]
+
+    subscribers = {}
+    for i in range(0, len(flat) - 1, 2):
+        chat_id, raw_value = flat[i], flat[i + 1]
+        try:
+            subscribers[chat_id] = json.loads(raw_value)
+        except json.JSONDecodeError:
+            print(f"Skipping malformed subscriber entry for {chat_id}")
+    return subscribers
 
 
 def format_job_line(job):

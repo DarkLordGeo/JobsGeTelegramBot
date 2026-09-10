@@ -6,17 +6,18 @@ half - an always-on service that receives Telegram updates (a user
 messaging the bot, or tapping an inline-keyboard button) and lets them
 choose which job categories they want to be DMed about.
 
-Preferences are stored in telegram_bot/subscribers.json, committed back to
-this repo via the GitHub Contents API (Render's free tier disk is
-ephemeral - anything written locally is lost on restart/redeploy, so state
-has to live somewhere durable). notify.py reads that same file on its next
-scheduled run to know who wants what.
+Preferences are stored in Upstash Redis (a "subscribers" hash: field is a
+chat_id, value is a JSON blob like {"categories": [...]}) rather than on
+local disk - Render's free tier disk is ephemeral, wiped on every
+restart/redeploy. Each user's entry is an independent hash field, so
+concurrent updates from different users never conflict with each other,
+and a single HSET is fast enough to just do synchronously in the request -
+no caching or background writes needed.
 
 Required environment variables:
-    TELEGRAM_BOT_TOKEN   - from @BotFather
-    GITHUB_TOKEN         - fine-grained PAT, Contents: Read & write, scoped
-                           to this repo
-    GITHUB_REPO          - "owner/repo", e.g. "DarkLordGeo/JobsGeTelegramBot"
+    TELEGRAM_BOT_TOKEN        - from @BotFather
+    UPSTASH_REDIS_REST_URL    - from the Upstash console
+    UPSTASH_REDIS_REST_TOKEN  - from the Upstash console
 Optional:
     TELEGRAM_WEBHOOK_SECRET - if set, incoming requests must carry a
                               matching X-Telegram-Bot-Api-Secret-Token
@@ -24,11 +25,9 @@ Optional:
                               the webhook with Telegram)
 """
 
-import base64
 import json
 import os
 import sys
-import threading
 
 import requests
 from flask import Flask, request, abort
@@ -39,112 +38,46 @@ from categorize import CATEGORIES, OTHER_CATEGORY  # noqa: E402
 ALL_CATEGORIES = [name for name, _keywords in CATEGORIES] + [OTHER_CATEGORY]
 
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
-GITHUB_REPO = os.environ["GITHUB_REPO"]
+UPSTASH_URL = os.environ["UPSTASH_REDIS_REST_URL"]
+UPSTASH_TOKEN = os.environ["UPSTASH_REDIS_REST_TOKEN"]
 WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET")
 
-SUBSCRIBERS_PATH = "telegram_bot/subscribers.json"
+SUBSCRIBERS_KEY = "subscribers"  # Redis hash: chat_id -> JSON {"categories": [...]}
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
-GITHUB_API = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{SUBSCRIBERS_PATH}"
 REQUEST_TIMEOUT = 15
 
 app = Flask(__name__)
 
 
-# ---------------------------------------------------------------- storage --
-#
-# Every button tap used to do a synchronous GitHub read + GitHub write + two
-# Telegram calls before responding - each GitHub Contents API round trip is
-# a real git commit under the hood, so that added up to a very sluggish
-# button. Fix: keep the subscribers dict cached in memory (this process
-# runs as a single gunicorn worker, so a plain dict + lock is safe - no
-# cross-process inconsistency to worry about), answer Telegram immediately
-# from the in-memory state, and commit to GitHub afterward in a background
-# thread. A crash between updating the cache and the background commit
-# finishing could lose that one toggle, which is an acceptable tradeoff for
-# a personal preferences bot.
+# ------------------------------------------------------------------ Redis --
 
-_cache_lock = threading.Lock()
-_subscribers_cache = None
-_subscribers_sha = None
-
-
-def _fetch_subscribers():
-    """Return (data, sha) straight from GitHub. sha is None if the file
-    doesn't exist yet."""
-    response = requests.get(
-        GITHUB_API,
-        headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
+def redis_command(*args):
+    response = requests.post(
+        UPSTASH_URL,
+        headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"},
+        json=list(args),
         timeout=REQUEST_TIMEOUT,
     )
-    if response.status_code == 404:
-        return {}, None
     response.raise_for_status()
-    payload = response.json()
-    content = base64.b64decode(payload["content"]).decode("utf-8")
-    return json.loads(content), payload["sha"]
+    return response.json()["result"]
 
 
-def _put_subscribers(data, sha):
-    """Commit the given subscribers dict. Retries once on a sha conflict
-    (another request updated the file in between our read and write).
-    Returns the new sha."""
-    body = {
-        "message": "Update subscriber preferences",
-        "content": base64.b64encode(
-            json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
-        ).decode("utf-8"),
-    }
-    if sha:
-        body["sha"] = sha
+def get_categories(chat_id):
+    """Return the set of categories this chat_id is subscribed to (empty
+    if they've never interacted with the bot)."""
+    raw = redis_command("HGET", SUBSCRIBERS_KEY, str(chat_id))
+    if not raw:
+        return set()
+    return set(json.loads(raw).get("categories", []))
 
-    response = requests.put(
-        GITHUB_API,
-        headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
-        json=body,
-        timeout=REQUEST_TIMEOUT,
+
+def set_categories(chat_id, categories):
+    redis_command(
+        "HSET",
+        SUBSCRIBERS_KEY,
+        str(chat_id),
+        json.dumps({"categories": sorted(categories)}, ensure_ascii=False),
     )
-    if response.status_code == 409:
-        _, fresh_sha = _fetch_subscribers()
-        body["sha"] = fresh_sha
-        response = requests.put(
-            GITHUB_API,
-            headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
-            json=body,
-            timeout=REQUEST_TIMEOUT,
-        )
-    response.raise_for_status()
-    return response.json()["content"]["sha"]
-
-
-def get_subscribers():
-    """Return the live in-memory subscribers dict, loading it from GitHub
-    once per process lifetime. Callers mutate the returned dict in place,
-    then call queue_persist() to save it."""
-    global _subscribers_cache, _subscribers_sha
-    with _cache_lock:
-        if _subscribers_cache is None:
-            _subscribers_cache, _subscribers_sha = _fetch_subscribers()
-        return _subscribers_cache
-
-
-def queue_persist():
-    """Commit the current in-memory subscribers dict to GitHub in the
-    background, so the caller doesn't block on GitHub's round trip."""
-
-    def _run():
-        global _subscribers_sha
-        with _cache_lock:
-            snapshot = json.loads(json.dumps(_subscribers_cache))
-            sha = _subscribers_sha
-        try:
-            new_sha = _put_subscribers(snapshot, sha)
-            with _cache_lock:
-                _subscribers_sha = new_sha
-        except Exception as exc:  # noqa: BLE001 - log and move on, never crash a background thread
-            print(f"Failed to persist subscribers.json: {exc}")
-
-    threading.Thread(target=_run, daemon=True).start()
 
 
 # --------------------------------------------------------------- Telegram --
@@ -211,18 +144,12 @@ def handle_message(message):
     text = (message.get("text") or "").strip()
 
     if text in ("/start", "/preferences"):
-        data = get_subscribers()
-        key = str(chat_id)
-        entry = data.get(key)
-        if entry:
-            selected = set(entry["categories"])
-        else:
-            # First-time user: nothing selected until they opt in. Persist
-            # the (empty) entry immediately anyway, so they're recorded as
-            # a known subscriber the moment they interact with the bot.
-            selected = set()
-            data[key] = {"categories": []}
-            queue_persist()
+        # Nothing selected until the user opts in. This also doubles as
+        # "register this chat_id as a known subscriber" even before they've
+        # picked anything, by writing the (empty) entry if none exists yet.
+        selected = get_categories(chat_id)
+        if not selected:
+            set_categories(chat_id, [])
 
         send_message(
             chat_id,
@@ -248,11 +175,7 @@ def handle_callback(callback_query):
         answer_callback_query(callback_id)
         return
 
-    data = get_subscribers()
-    key = str(chat_id)
-    entry = data.get(key)
-    selected = set(entry["categories"]) if entry else set()
-
+    selected = get_categories(chat_id)
     if category in selected:
         selected.discard(category)
         note = f"Turned off: {category}"
@@ -260,14 +183,10 @@ def handle_callback(callback_query):
         selected.add(category)
         note = f"Turned on: {category}"
 
-    data[key] = {"categories": sorted(selected)}
+    set_categories(chat_id, selected)
 
-    # Answer Telegram immediately from the in-memory state - the button
-    # should feel instant regardless of GitHub's round trip.
     answer_callback_query(callback_id, text=note)
     edit_message_markup(chat_id, message_id, build_keyboard(selected))
-
-    queue_persist()
 
 
 @app.route("/", methods=["GET"])

@@ -64,6 +64,42 @@ provided automatically - nothing to add for that.
 `database/jobs_data.json` at the time this was set up, so the first real
 notify run only reports what's actually new - not the whole dataset.
 
+## Per-user category preferences (optional)
+
+The channel/group gets every new job, always. Anyone who wants only
+specific categories can instead DM the bot directly and pick what they
+want - that's a separate, always-on service (`webhook_bot/app.py`,
+deployed on Render) that Telegram calls whenever someone messages the bot
+or taps a button.
+
+Preferences are stored in [Upstash](https://upstash.com) Redis (free tier)
+rather than this repo - a `subscribers` hash, one field per chat_id. Setup:
+
+1. Create a free Redis database at console.upstash.com, grab its
+   **REST URL** and **REST token**.
+2. Add two more repo secrets (same place as above):
+
+   | Secret | Value |
+   |---|---|
+   | `UPSTASH_REDIS_REST_URL` | from the Upstash console |
+   | `UPSTASH_REDIS_REST_TOKEN` | from the Upstash console |
+
+3. Deploy `webhook_bot/` as its own Render web service (build:
+   `pip install -r webhook_bot/requirements.txt`, start:
+   `gunicorn --chdir webhook_bot app:app`), with env vars
+   `TELEGRAM_BOT_TOKEN`, `UPSTASH_REDIS_REST_URL`,
+   `UPSTASH_REDIS_REST_TOKEN`, and optionally `TELEGRAM_WEBHOOK_SECRET`
+   (a random string - if set, Telegram must echo it back on every request
+   for the webhook to accept it).
+4. Point Telegram at it once:
+   ```
+   https://api.telegram.org/bot<TOKEN>/setWebhook?url=<RENDER_URL>/webhook&secret_token=<SECRET>
+   ```
+
+This step is entirely optional - without it, `notify.py` just skips
+personalized delivery and the channel broadcast keeps working exactly the
+same either way.
+
 ## Tuning categories
 
 `telegram_bot/categorize.py` is a plain keyword matcher, not ML - it
