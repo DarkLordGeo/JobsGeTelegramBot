@@ -142,8 +142,11 @@ def webhook():
 def handle_message(message):
     chat_id = message["chat"]["id"]
     text = (message.get("text") or "").strip()
+    # Deep links (t.me/<bot>?start=xyz) send "/start xyz", not bare "/start" -
+    # match on the command itself, ignore any payload after it.
+    command = text.split()[0] if text else ""
 
-    if text in ("/start", "/preferences"):
+    if command in ("/start", "/preferences"):
         # Nothing selected until the user opts in. This also doubles as
         # "register this chat_id as a known subscriber" even before they've
         # picked anything, by writing the (empty) entry if none exists yet.
