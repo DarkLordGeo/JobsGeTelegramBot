@@ -100,6 +100,12 @@ This step is entirely optional - without it, `notify.py` just skips
 personalized delivery and the channel broadcast keeps working exactly the
 same either way.
 
+The same two secrets also let the scrape workflow mirror its output into
+Redis under a plain string key, `jobs_data` (`scheduled_scripts/sync_to_redis.py`,
+run as a step in `test.yml`) - purely additive, alongside the existing
+git commit, for anything that'd rather read the current job list from
+Redis than check out the repo.
+
 ## Tuning categories
 
 `telegram_bot/categorize.py` is a plain keyword matcher, not ML - it

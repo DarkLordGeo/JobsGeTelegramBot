@@ -46,6 +46,16 @@ jobs:
         run: "python scheduled_scripts/data_analysis.py"
         working-directory: ${{ github.workspace }}
 
+      # Mirrors the scrape into Redis alongside the git commit below - not
+      # a replacement for it. Skipped on PRs so a test run never overwrites
+      # the real data with whatever's on that branch.
+      - name: sync scraped jobs to Redis
+        if: github.event_name != 'pull_request'
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: "python scheduled_scripts/sync_to_redis.py"
+
       - name: commit files
         run: |
           git config --local user.email "action@github.com"
