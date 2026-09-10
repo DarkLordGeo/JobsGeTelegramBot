@@ -1,0 +1,56 @@
+name: Notify Telegram of new jobs
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
+  workflow_dispatch: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout this repo
+        uses: actions/checkout@v5
+
+      # scrap_jobs_ge is private, so this needs a PAT (repo scope) stored as
+      # the SCRAPER_REPO_TOKEN secret - the default GITHUB_TOKEN can't read
+      # across repos. Sparse-checkout keeps this to just the one file.
+      - name: checkout scraped job data
+        uses: actions/checkout@v5
+        with:
+          repository: DarkLordGeo/scrap_jobs_ge
+          token: ${{ secrets.SCRAPER_REPO_TOKEN }}
+          sparse-checkout: |
+            database/jobs_data.json
+          sparse-checkout-cone-mode: false
+          path: scraper-data
+
+      - name: setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12.6"
+          cache: "pip"
+
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: post new jobs to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python notify.py
+
+      - name: commit updated seen_jobs.json
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add seen_jobs.json
+          git diff-index --quiet HEAD || git commit -m "Update seen jobs list"
+
+      - name: push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
