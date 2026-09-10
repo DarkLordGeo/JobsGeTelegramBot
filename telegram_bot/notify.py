@@ -6,6 +6,10 @@ separate token. Run after database/jobs_data.json is updated (see
 been posted in seen_jobs.json so re-runs only notify about genuinely new
 listings, not the whole dataset every time.
 
+Also sends personalized per-category messages to anyone who's set
+preferences via the webhook bot (webhook_bot/app.py) - see
+telegram_bot/subscribers.json, which that service maintains.
+
 Required environment variables:
     TELEGRAM_BOT_TOKEN  - from @BotFather
     TELEGRAM_CHAT_ID    - the channel/group/user id to post to
@@ -26,11 +30,12 @@ from pathlib import Path
 
 import requests
 
-from categorize import group_by_category
+from categorize import categorize, group_by_category
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 JOBS_DATA_PATH = REPO_ROOT / "database" / "jobs_data.json"
 SEEN_JOBS_PATH = Path(__file__).resolve().parent / "seen_jobs.json"
+SUBSCRIBERS_PATH = Path(__file__).resolve().parent / "subscribers.json"
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 MAX_MESSAGE_LENGTH = 4096
@@ -61,6 +66,13 @@ def load_seen_ids():
 def save_seen_ids(job_ids):
     with open(SEEN_JOBS_PATH, "w", encoding="utf-8") as f:
         json.dump(sorted(job_ids), f, ensure_ascii=False, indent=2)
+
+
+def load_subscribers():
+    if not SUBSCRIBERS_PATH.exists():
+        return {}
+    with open(SUBSCRIBERS_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def format_job_line(job):
@@ -109,6 +121,18 @@ def send_telegram_message(token, chat_id, text):
     response.raise_for_status()
 
 
+def send_grouped(token, destination_chat_id, grouped):
+    """Send one message per category to a single destination. Isolated per
+    destination by the caller - a failure here (e.g. a subscriber blocked
+    the bot) shouldn't take down delivery to everyone else."""
+    for category, category_jobs in grouped.items():
+        header = f"🆕 <b>{category}</b> ({len(category_jobs)})"
+        lines = [format_job_line(job) for job in category_jobs]
+        for message in chunk_message(header, lines):
+            send_telegram_message(token, destination_chat_id, message)
+            time.sleep(1)  # stay well under Telegram's rate limits
+
+
 def main():
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
@@ -133,16 +157,36 @@ def main():
 
     grouped = group_by_category(jobs_to_send)
 
-    for category, category_jobs in grouped.items():
-        header = f"🆕 <b>{category}</b> ({len(category_jobs)})"
-        lines = [format_job_line(job) for job in category_jobs]
-        for message in chunk_message(header, lines):
-            send_telegram_message(token, chat_id, message)
-            time.sleep(1)  # stay well under Telegram's rate limits
+    try:
+        send_grouped(token, chat_id, grouped)
+    except requests.exceptions.HTTPError as exc:
+        print(f"Failed to post to the main channel/chat: {exc}")
+
+    subscribers = load_subscribers()
+    jobs_by_category = [(categorize(job.get("position", "")), job) for job in jobs_to_send]
+    sent_to = 0
+    for subscriber_id, prefs in subscribers.items():
+        wanted = set(prefs.get("categories", []))
+        subscriber_grouped = {}
+        for category, job in jobs_by_category:
+            if category in wanted:
+                subscriber_grouped.setdefault(category, []).append(job)
+        if not subscriber_grouped:
+            continue
+        try:
+            send_grouped(token, subscriber_id, subscriber_grouped)
+            sent_to += 1
+        except requests.exceptions.HTTPError as exc:
+            # A blocked bot, a deleted account, etc. shouldn't stop delivery
+            # to everyone else.
+            print(f"Failed to notify subscriber {subscriber_id}: {exc}")
 
     all_ids = seen_ids | {job["job_id"] for job in jobs if job.get("job_id")}
     save_seen_ids(all_ids)
-    print(f"Posted {len(jobs_to_send)} jobs across {len(grouped)} categories.")
+    print(
+        f"Posted {len(jobs_to_send)} jobs across {len(grouped)} categories "
+        f"to the main destination, and to {sent_to}/{len(subscribers)} subscribers."
+    )
 
 
 if __name__ == "__main__":
