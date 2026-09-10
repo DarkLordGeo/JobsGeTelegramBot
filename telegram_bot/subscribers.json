@@ -3,24 +3,5 @@
     "categories": [
       "QA / Testing"
     ]
-  },
-  "999999": {
-    "categories": [
-      "Backend Development",
-      "Data / ML / Analytics",
-      "Design / UI-UX",
-      "DevOps / Infrastructure",
-      "Development (general)",
-      "Frontend Development",
-      "Full-Stack Development",
-      "Management / Leadership",
-      "Mobile Development",
-      "Other / IT",
-      "QA / Testing",
-      "Support / Helpdesk"
-    ]
-  },
-  "888888": {
-    "categories": []
   }
 }
