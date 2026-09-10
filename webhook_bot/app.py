@@ -28,6 +28,7 @@ import base64
 import json
 import os
 import sys
+import threading
 
 import requests
 from flask import Flask, request, abort
@@ -51,9 +52,26 @@ app = Flask(__name__)
 
 
 # ---------------------------------------------------------------- storage --
+#
+# Every button tap used to do a synchronous GitHub read + GitHub write + two
+# Telegram calls before responding - each GitHub Contents API round trip is
+# a real git commit under the hood, so that added up to a very sluggish
+# button. Fix: keep the subscribers dict cached in memory (this process
+# runs as a single gunicorn worker, so a plain dict + lock is safe - no
+# cross-process inconsistency to worry about), answer Telegram immediately
+# from the in-memory state, and commit to GitHub afterward in a background
+# thread. A crash between updating the cache and the background commit
+# finishing could lose that one toggle, which is an acceptable tradeoff for
+# a personal preferences bot.
 
-def load_subscribers():
-    """Return (data, sha). sha is None if the file doesn't exist yet."""
+_cache_lock = threading.Lock()
+_subscribers_cache = None
+_subscribers_sha = None
+
+
+def _fetch_subscribers():
+    """Return (data, sha) straight from GitHub. sha is None if the file
+    doesn't exist yet."""
     response = requests.get(
         GITHUB_API,
         headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
@@ -67,9 +85,10 @@ def load_subscribers():
     return json.loads(content), payload["sha"]
 
 
-def save_subscribers(data, sha):
-    """Commit the updated subscribers file. Retries once on a sha conflict
-    (another request updated the file in between our read and write)."""
+def _put_subscribers(data, sha):
+    """Commit the given subscribers dict. Retries once on a sha conflict
+    (another request updated the file in between our read and write).
+    Returns the new sha."""
     body = {
         "message": "Update subscriber preferences",
         "content": base64.b64encode(
@@ -86,7 +105,7 @@ def save_subscribers(data, sha):
         timeout=REQUEST_TIMEOUT,
     )
     if response.status_code == 409:
-        _, fresh_sha = load_subscribers()
+        _, fresh_sha = _fetch_subscribers()
         body["sha"] = fresh_sha
         response = requests.put(
             GITHUB_API,
@@ -95,6 +114,37 @@ def save_subscribers(data, sha):
             timeout=REQUEST_TIMEOUT,
         )
     response.raise_for_status()
+    return response.json()["content"]["sha"]
+
+
+def get_subscribers():
+    """Return the live in-memory subscribers dict, loading it from GitHub
+    once per process lifetime. Callers mutate the returned dict in place,
+    then call queue_persist() to save it."""
+    global _subscribers_cache, _subscribers_sha
+    with _cache_lock:
+        if _subscribers_cache is None:
+            _subscribers_cache, _subscribers_sha = _fetch_subscribers()
+        return _subscribers_cache
+
+
+def queue_persist():
+    """Commit the current in-memory subscribers dict to GitHub in the
+    background, so the caller doesn't block on GitHub's round trip."""
+
+    def _run():
+        global _subscribers_sha
+        with _cache_lock:
+            snapshot = json.loads(json.dumps(_subscribers_cache))
+            sha = _subscribers_sha
+        try:
+            new_sha = _put_subscribers(snapshot, sha)
+            with _cache_lock:
+                _subscribers_sha = new_sha
+        except Exception as exc:  # noqa: BLE001 - log and move on, never crash a background thread
+            print(f"Failed to persist subscribers.json: {exc}")
+
+    threading.Thread(target=_run, daemon=True).start()
 
 
 # --------------------------------------------------------------- Telegram --
@@ -161,23 +211,22 @@ def handle_message(message):
     text = (message.get("text") or "").strip()
 
     if text in ("/start", "/preferences"):
-        data, sha = load_subscribers()
+        data = get_subscribers()
         key = str(chat_id)
         entry = data.get(key)
         if entry:
             selected = set(entry["categories"])
         else:
-            # First-time user: default to everything selected, and persist
-            # that immediately - otherwise they'd see a fully-checked
-            # keyboard but not actually be recorded as a subscriber at all
-            # until they tap something.
-            selected = set(ALL_CATEGORIES)
-            data[key] = {"categories": sorted(selected)}
-            save_subscribers(data, sha)
+            # First-time user: nothing selected until they opt in. Persist
+            # the (empty) entry immediately anyway, so they're recorded as
+            # a known subscriber the moment they interact with the bot.
+            selected = set()
+            data[key] = {"categories": []}
+            queue_persist()
 
         send_message(
             chat_id,
-            "Choose which job categories you want to hear about. Tap to toggle:",
+            "Tap a category to turn it on. You'll only be notified about the ones you select:",
             reply_markup=build_keyboard(selected),
         )
     else:
@@ -199,10 +248,10 @@ def handle_callback(callback_query):
         answer_callback_query(callback_id)
         return
 
-    data, sha = load_subscribers()
+    data = get_subscribers()
     key = str(chat_id)
     entry = data.get(key)
-    selected = set(entry["categories"]) if entry else set(ALL_CATEGORIES)
+    selected = set(entry["categories"]) if entry else set()
 
     if category in selected:
         selected.discard(category)
@@ -212,10 +261,13 @@ def handle_callback(callback_query):
         note = f"Turned on: {category}"
 
     data[key] = {"categories": sorted(selected)}
-    save_subscribers(data, sha)
 
+    # Answer Telegram immediately from the in-memory state - the button
+    # should feel instant regardless of GitHub's round trip.
     answer_callback_query(callback_id, text=note)
     edit_message_markup(chat_id, message_id, build_keyboard(selected))
+
+    queue_persist()
 
 
 @app.route("/", methods=["GET"])
