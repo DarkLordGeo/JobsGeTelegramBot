@@ -1,0 +1,57 @@
+name: generate links
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "0 20 * * *" # every day at midnight UTC
+  workflow_dispatch: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v5
+
+      - name: setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12.6"
+          cache: "pip"
+
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: execute link generation script for scrapy
+        run: "python ./scheduled_scripts/link_generator.py"
+
+      # scrapy.cfg lives in jobs_ge/, so the crawl has to run from there - but
+      # its output needs to land in the repo-root database/ folder, which is
+      # what data_analysis.py and notify.py both actually read from. -O (not
+      # -o) because database/jobs_data.json already has content from
+      # previous runs: -o appends to an existing feed instead of replacing
+      # it, which would corrupt the JSON on every run after the first.
+      - name: execute scrapy
+        run: "scrapy crawl scraper -O ${{ github.workspace }}/database/jobs_data.json"
+        working-directory: ${{ github.workspace }}/jobs_ge
+
+      - name: execute analysis script
+        run: "python scheduled_scripts/data_analysis.py"
+        working-directory: ${{ github.workspace }}
+
+      - name: commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff-index --quiet HEAD || (git commit -a -m "updated logs" --allow-empty)
+
+      - name: push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main

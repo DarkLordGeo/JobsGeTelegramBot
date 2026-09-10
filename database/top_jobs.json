@@ -1,0 +1,930 @@
+[
+    {
+        "position": "IT მხარდაჭერის სპეციალისტი",
+        "count": 9
+    },
+    {
+        "position": "IT სპეციალისტი",
+        "count": 5
+    },
+    {
+        "position": "DevOps ინჟინერი",
+        "count": 5
+    },
+    {
+        "position": "IT ბიზნეს ანალიტიკოსი",
+        "count": 5
+    },
+    {
+        "position": "Java დეველოპერი",
+        "count": 4
+    },
+    {
+        "position": "უფროსი DevOps ინჟინერი",
+        "count": 4
+    },
+    {
+        "position": "IT პროექტების მენეჯერი",
+        "count": 3
+    },
+    {
+        "position": "სისტემური ადმინისტრატორი",
+        "count": 3
+    },
+    {
+        "position": "ტექნიკური მხარდაჭერის სპეციალისტი",
+        "count": 3
+    },
+    {
+        "position": "UI/UX დიზაინერი",
+        "count": 2
+    },
+    {
+        "position": "IT მხარდაჭერის უმცროსი სპეციალისტი",
+        "count": 2
+    },
+    {
+        "position": "ტექნიკოსი",
+        "count": 2
+    },
+    {
+        "position": "პროდუქტის მფლობელი",
+        "count": 2
+    },
+    {
+        "position": "QA ტესტერი",
+        "count": 2
+    },
+    {
+        "position": "უფროსი Flutter დეველოპერი",
+        "count": 2
+    },
+    {
+        "position": "უფროსი React Native დეველოპერი",
+        "count": 2
+    },
+    {
+        "position": "ტექნიკური მხარდაჭერის ინჟინერი",
+        "count": 2
+    },
+    {
+        "position": "სქრამ მასტერი",
+        "count": 2
+    },
+    {
+        "position": "Front-End დეველოპერი",
+        "count": 2
+    },
+    {
+        "position": "ოპტიკური ქსელის მომსახურების ინჟინერი",
+        "count": 2
+    },
+    {
+        "position": "IT ტექნიკოსი ATM/POS მიმართულებით",
+        "count": 2
+    },
+    {
+        "position": "ბიზნეს ანალიტიკოსი",
+        "count": 2
+    },
+    {
+        "position": "NOC ინჟინერი",
+        "count": 2
+    },
+    {
+        "position": "UI ინჟინერი C#",
+        "count": 2
+    },
+    {
+        "position": "Back End დეველოპერი",
+        "count": 2
+    },
+    {
+        "position": "Back-End დეველოპერი",
+        "count": 2
+    },
+    {
+        "position": "Manual QA ინჟინერი",
+        "count": 2
+    },
+    {
+        "position": "Python დეველოპერი",
+        "count": 2
+    },
+    {
+        "position": "მონაცემთა ინჟინერი",
+        "count": 2
+    },
+    {
+        "position": "ქსელური და სერვერული აპარატურის შერჩ. და ხარჯთ. სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "MEP ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "მომხმარებელთა მხარდაჭერის ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი პროგრამული უზრუნველყოფის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "JAVA-დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "ინფრასტრუქტურის უსაფრთხოების ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "IT ინჟინერი/ტექნიკოსი",
+        "count": 1
+    },
+    {
+        "position": "სტაჟირება IT პროექტების მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "IT მხარდაჭერის ტექნიკოსი - ნახევარი განაკვეთი",
+        "count": 1
+    },
+    {
+        "position": "პროგრამული უზრუნველყოფის ხარისხის მართვის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "ციფრული პლატფორმების ტესტერი",
+        "count": 1
+    },
+    {
+        "position": "Senior QA Manual  ტესტერი",
+        "count": 1
+    },
+    {
+        "position": "Network Security Appliance ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Full-Stack დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "ქლაუდ აპლიკაციების ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "ციფრული ტრანსფორმაციის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "გადაწყვეტილების არქიტექტორი",
+        "count": 1
+    },
+    {
+        "position": "საოფისე ტექნიკის შეკეთების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "Wireless ინჟინერი/სტაჟიორი",
+        "count": 1
+    },
+    {
+        "position": "IT ცვლის ტექნიკოსი",
+        "count": 1
+    },
+    {
+        "position": "IT ინჟინერი - DevOps",
+        "count": 1
+    },
+    {
+        "position": "ვებსაიტის დიზაინერი",
+        "count": 1
+    },
+    {
+        "position": "CMS ოპერაციების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "Next.js, Full-Stack დეველოპერი - სტაჟიორი",
+        "count": 1
+    },
+    {
+        "position": "Android დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი სისტემური ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "ხარისხის უზრუნველყოფის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "SQL რეპორტინგის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი .NET დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი QA ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Freelance უფროსი Frontend ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი WordPress დიზაინერი/დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "უმცროსი სერვის მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "ბუკმეიკინგის უმცროსი ანალიტიკოსი",
+        "count": 1
+    },
+    {
+        "position": "IT პროექტის უფროსი მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "Tech რეკრუტინგის მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "1C პროგრამის ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "პროდუქტის მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "Principal ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "IT ოპერაციების უსაფრთხოების მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "ქლაუდ პროდუქტებისა და გადაწყვეტების ხელმძღვანელი/CPO",
+        "count": 1
+    },
+    {
+        "position": "უმცროსი ანალიტიკოსი",
+        "count": 1
+    },
+    {
+        "position": "კაბელირების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "სტაჟირება IT მხარდაჭერის გუნდში",
+        "count": 1
+    },
+    {
+        "position": "ინფორმაციული უსაფრთხოების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "Front–End დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "QA Manual ტესტერი",
+        "count": 1
+    },
+    {
+        "position": "კიბერუსაფრთხოების უფროსი სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "ავტომატიზაციის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "AI Integration მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "UX კვლევის მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "WMS პროგრამული უზრუნველყოფის დეპარტამენტის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "ვებ დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "უმცროსი Angular დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "პროგრამული უზრუნველყოფის ინჟინერი - C/C++",
+        "count": 1
+    },
+    {
+        "position": "ოპერაციული პროცესების კოორდინატორი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი ვებ დიზაინერი",
+        "count": 1
+    },
+    {
+        "position": "Go/Golang Backend ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "IT მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "Golang დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "პროდუქტების მენეჯერი - Bare Metal Services",
+        "count": 1
+    },
+    {
+        "position": "QA ავტომატიზაციის უფროსი ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": " DevOps ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Android დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "IT აუდიტის განყ. პირველი თანრიგის უფროსი შიდა აუდიტორი",
+        "count": 1
+    },
+    {
+        "position": "1C ERP პროგრამის ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "IT ადმინისტრატორი ",
+        "count": 1
+    },
+    {
+        "position": "უფროსი QA ავტომატიზაციის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Onboarding QA ტესტერი",
+        "count": 1
+    },
+    {
+        "position": "AI განვითარების პროექტების მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "ცვლილებების და პრობლემების მართვის მთ. სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "ციფრული რეკლამის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "წამყვანი მონაცემთა მეცნიერი",
+        "count": 1
+    },
+    {
+        "position": "Site Reliability ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "B2B ტექნიკური მხარდაჭერის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "თიმ ლიდი - Frontend Web App Team",
+        "count": 1
+    },
+    {
+        "position": "დიზაინის პროექტ მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "უმცროსი სისტემური ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "Front-end ინჟინერი - Angular",
+        "count": 1
+    },
+    {
+        "position": "წამყვანი Full Stack ინჟინერი - Node/React",
+        "count": 1
+    },
+    {
+        "position": "ციფრული ტრანსფორმაციის ექსპერტი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Cloud არქიტექტორი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Software არქიტექტორი-გადახდები-P2P & Crypto, iGaming",
+        "count": 1
+    },
+    {
+        "position": "ოპტიკური გადაწყვეტილებების მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "ქსელის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Back-End დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "პროგრამული მხარდაჭერის უმცროსი სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": ".NET დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "PPC სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "ნოუთბუქის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Full Stack ვებ დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "პროგრამული მხარდაჭერის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "Full-Stack დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "RF ინჟინერი/სტაჟიორი",
+        "count": 1
+    },
+    {
+        "position": "კომპიუტერული მომსახურების მენეჯერი - OTH მიმართულებით",
+        "count": 1
+    },
+    {
+        "position": "ტესტერი",
+        "count": 1
+    },
+    {
+        "position": " პოს ტერმინალების ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Python ავტომატიზაციის QA ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Backend დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "უმცროსი Front-end დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "ინსტალატორების ტექნიკური მხარდაჭერის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Full Stack ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "პროფესიული განათლების მასწავლებლები - IT",
+        "count": 1
+    },
+    {
+        "position": "ERP სისტემის ოპერატორი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Full-Stack დეველოპერი - .NET & React",
+        "count": 1
+    },
+    {
+        "position": "UI დიზაინერი",
+        "count": 1
+    },
+    {
+        "position": "UI ინჟინერი Python",
+        "count": 1
+    },
+    {
+        "position": "უმცროსი ცვლის ლიდერი",
+        "count": 1
+    },
+    {
+        "position": "2D Spine ანიმატორი",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა ანალიტიკოსი",
+        "count": 1
+    },
+    {
+        "position": "Backend ინჟინერი - Node.js/NestJS",
+        "count": 1
+    },
+    {
+        "position": "სერვისების მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "ავტომატიზაციისა და მონაცემთა დამუშავების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა ბაზის ადმინისტრატორი - PostgreSQL&MongoDB",
+        "count": 1
+    },
+    {
+        "position": "IT Solution მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "Middle+ Palantir Foundry დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "AI ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "ინსტალატორი",
+        "count": 1
+    },
+    {
+        "position": "Middle Flutter დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "D&IT ბიზნეს გადაწყვეტილებების ანალიტიკოსი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Angular დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "საბანკო მოწყობილობების რემონტის ინჟინრის თანაშემწე",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Software არქიტექტორი - Sportsbook",
+        "count": 1
+    },
+    {
+        "position": "Azure მონაცემთა ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Off-Page SEO სპეციალისტი – iGaming ",
+        "count": 1
+    },
+    {
+        "position": "ოპტიკური ქსელის მემონტაჟე",
+        "count": 1
+    },
+    {
+        "position": ".Net & Integration დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "საბარათე ოპერაციების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი  IT სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Fullstack დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "POS ტერმინალების პროგრამირების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "Middle Full-Stack დეველოპერი Node.js-ით",
+        "count": 1
+    },
+    {
+        "position": "ქსელებისა და უსაფრთხოების ხელმძღვანელი",
+        "count": 1
+    },
+    {
+        "position": "Front End დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "ვებ დიზაინერი",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა ბაზის ოპერატორი",
+        "count": 1
+    },
+    {
+        "position": "პროდუქტის მფლობელი - Swoop.ge",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა ოპერაციების სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "ოპერაციების უმცროსი სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "სერვის დესკის ანალიტიკოსი - L1&L2",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Java დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "Laravel დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "Front-end დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "Oracle დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "iOS დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "SEO სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "საინფორმაციო მხარდაჭერის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "მბეჭდავი დიზაინერი",
+        "count": 1
+    },
+    {
+        "position": "პორტფელის შენარჩუნების მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "C++ დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი GCP ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა მართვის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "კრეატიული ტექნოლოგიების ცენტრი - უფასო კურსები",
+        "count": 1
+    },
+    {
+        "position": "IT აუდიტის განყ. პირველი თანრიგის მთავარი შიდა აუდიტორი",
+        "count": 1
+    },
+    {
+        "position": "Engineering Lead",
+        "count": 1
+    },
+    {
+        "position": "Frontend დეველოპერი - React + TypeScript",
+        "count": 1
+    },
+    {
+        "position": "პროგრამული უზრუნველყოფის ინჟინერი - Typescript, Python, AI/M",
+        "count": 1
+    },
+    {
+        "position": "Linux სისტემების ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "წამყვანი Full-Stack დეველოპერი,უმცროსი Full-Stack დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "აპლიკაციების მხარდაჭერის უმცროსი სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "SAP CAP Java Cloud დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა მეცნიერი",
+        "count": 1
+    },
+    {
+        "position": "Full Stack დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "პროგრამული უზრუნველყოფის ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "IT ინჟინერი - Microsoft",
+        "count": 1
+    },
+    {
+        "position": "პროდუქტების მენეჯერი - Public Cloud Services",
+        "count": 1
+    },
+    {
+        "position": "პროდუქტის დიზაინერი",
+        "count": 1
+    },
+    {
+        "position": "Junior/Middle QA ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "ინფორმაციული უსაფრთხოების მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "ღამის ცვლის DevOps ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი პროგრამ. უზრუნველყოფ. ინჟინერი - Typescript, Python",
+        "count": 1
+    },
+    {
+        "position": "CRM ანალიტიკოსი",
+        "count": 1
+    },
+    {
+        "position": "კახეთის საკონსულტაციო ცენტრის ბიზნეს კონსულტანტი",
+        "count": 1
+    },
+    {
+        "position": "AI ტესტირების ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი მონაცემთა ანალიტიკოსი",
+        "count": 1
+    },
+    {
+        "position": "IT ინფრასტრუქტურის უფროსის მოადგილე",
+        "count": 1
+    },
+    {
+        "position": "პროგრამული უზრუნველყოფის უფროსი დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "iOS / Android აპლიკაციის დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "AI/ML წამყვანი ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "აპლიკაციების ადმინისტრატორი",
+        "count": 1
+    },
+    {
+        "position": "Middle React Native დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "IT ქსელის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "Middle Data ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "E-commerce პლატფორმის და პროდუქტის მენეჯერი",
+        "count": 1
+    },
+    {
+        "position": "Cloud Security ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Backend დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "QA ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "AI ინჟინრის სამთვიანი სტაჟირება",
+        "count": 1
+    },
+    {
+        "position": "Angular სტაჟიორი",
+        "count": 1
+    },
+    {
+        "position": "უფროსი Node.js დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "SharePoint & Power Platform დეველოპერი",
+        "count": 1
+    },
+    {
+        "position": "მონაცემთა გადაწყვეტილებების არქიტექტორი",
+        "count": 1
+    },
+    {
+        "position": "თიმ ლიდი - Mobile Squad",
+        "count": 1
+    },
+    {
+        "position": "Tech ტალანტების სორსერი",
+        "count": 1
+    },
+    {
+        "position": "SEO მენეჯერი/Growth Hacker",
+        "count": 1
+    },
+    {
+        "position": "ინტეგრაციის ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": " ATM ბანკომატების და PayBox ჩასარიცხი აპარატების ტექნიკოსი",
+        "count": 1
+    },
+    {
+        "position": "აბონენტთა ტექნიკური მხარდაჭერის სპეციალისტი",
+        "count": 1
+    },
+    {
+        "position": "ავტომატიზაციის QA  ინჟინერი",
+        "count": 1
+    },
+    {
+        "position": "ბიზნესის განვითარების სპეციალისტის სტაჟირება",
+        "count": 1
+    },
+    {
+        "position": "ციფრული და საბარათე რისკების ოფიცერი",
+        "count": 1
+    },
+    {
+        "position": "Lead Solidity ინჟინერი - NFT / Tokenization - EVM",
+        "count": 1
+    }
+]
