@@ -82,22 +82,35 @@ def set_categories(chat_id, categories):
 
 # --------------------------------------------------------------- Telegram --
 
+def _call_telegram(method, payload):
+    """POST to a Telegram Bot API method and log (not raise) any failure -
+    a rejected call here shouldn't crash the webhook response, but silently
+    swallowing it made real failures invisible. "message is not modified"
+    is expected/harmless (e.g. a retried delivery re-applying the same
+    toggle) and not worth logging as an error."""
+    response = requests.post(f"{TELEGRAM_API}/{method}", json=payload, timeout=REQUEST_TIMEOUT)
+    if not response.ok:
+        body = response.text
+        if "message is not modified" not in body:
+            print(f"Telegram API error on {method}: {response.status_code} {body}")
+    return response
+
+
 def send_message(chat_id, text, reply_markup=None):
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     if reply_markup:
         payload["reply_markup"] = reply_markup
-    requests.post(f"{TELEGRAM_API}/sendMessage", json=payload, timeout=REQUEST_TIMEOUT)
+    _call_telegram("sendMessage", payload)
 
 
 def edit_message_markup(chat_id, message_id, reply_markup):
-    requests.post(
-        f"{TELEGRAM_API}/editMessageReplyMarkup",
-        json={
+    _call_telegram(
+        "editMessageReplyMarkup",
+        {
             "chat_id": chat_id,
             "message_id": message_id,
             "reply_markup": reply_markup,
         },
-        timeout=REQUEST_TIMEOUT,
     )
 
 
@@ -105,9 +118,7 @@ def answer_callback_query(callback_query_id, text=None):
     payload = {"callback_query_id": callback_query_id}
     if text:
         payload["text"] = text
-    requests.post(
-        f"{TELEGRAM_API}/answerCallbackQuery", json=payload, timeout=REQUEST_TIMEOUT
-    )
+    _call_telegram("answerCallbackQuery", payload)
 
 
 def build_keyboard(selected_categories):
