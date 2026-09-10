@@ -1,5 +1,8 @@
 name: Notify Telegram of new jobs
 
+permissions:
+  contents: write # needed to commit seen_jobs.json back
+
 on:
   # Run right after a fresh scrape lands on main.
   push:

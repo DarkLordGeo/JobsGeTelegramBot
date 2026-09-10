@@ -1,5 +1,8 @@
 name: generate links
 
+permissions:
+  contents: write # needed to commit scraped data back
+
 on:
   push:
     branches: ["main"]
