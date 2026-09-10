@@ -14,6 +14,11 @@ concurrent updates from different users never conflict with each other,
 and a single HSET is fast enough to just do synchronously in the request -
 no caching or background writes needed.
 
+A second hash, "pref_prompt_messages" (chat_id -> message_id), tracks the
+most recent category-picker sent to each chat, so re-running /start or
+/preferences deletes the old one instead of piling up a fresh picker every
+time.
+
 Required environment variables:
     TELEGRAM_BOT_TOKEN        - from @BotFather
     UPSTASH_REDIS_REST_URL    - from the Upstash console
@@ -43,8 +48,18 @@ UPSTASH_TOKEN = os.environ["UPSTASH_REDIS_REST_TOKEN"]
 WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET")
 
 SUBSCRIBERS_KEY = "subscribers"  # Redis hash: chat_id -> JSON {"categories": [...]}
+PROMPT_MESSAGES_KEY = "pref_prompt_messages"  # Redis hash: chat_id -> message_id of the last category-picker we sent
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 REQUEST_TIMEOUT = 15
+
+# Responses that mean "nothing to worry about" rather than a real failure -
+# e.g. a retried delivery re-toggling the same category, or a picker message
+# that's already gone (deleted, or too old for Telegram to delete at all).
+HARMLESS_TELEGRAM_ERRORS = (
+    "message is not modified",
+    "message to delete not found",
+    "message can't be deleted",
+)
 
 app = Flask(__name__)
 
@@ -80,27 +95,46 @@ def set_categories(chat_id, categories):
     )
 
 
+def get_last_prompt_message_id(chat_id):
+    """message_id of the category-picker we most recently sent this chat, if
+    any - used to delete it before sending a fresh one, so /start /
+    /preferences never leaves a pile of old pickers behind."""
+    raw = redis_command("HGET", PROMPT_MESSAGES_KEY, str(chat_id))
+    return int(raw) if raw else None
+
+
+def set_last_prompt_message_id(chat_id, message_id):
+    redis_command("HSET", PROMPT_MESSAGES_KEY, str(chat_id), str(message_id))
+
+
 # --------------------------------------------------------------- Telegram --
 
 def _call_telegram(method, payload):
     """POST to a Telegram Bot API method and log (not raise) any failure -
     a rejected call here shouldn't crash the webhook response, but silently
-    swallowing it made real failures invisible. "message is not modified"
-    is expected/harmless (e.g. a retried delivery re-applying the same
-    toggle) and not worth logging as an error."""
+    swallowing it made real failures invisible. HARMLESS_TELEGRAM_ERRORS are
+    expected in normal operation and not worth logging as errors."""
     response = requests.post(f"{TELEGRAM_API}/{method}", json=payload, timeout=REQUEST_TIMEOUT)
     if not response.ok:
         body = response.text
-        if "message is not modified" not in body:
+        if not any(err in body for err in HARMLESS_TELEGRAM_ERRORS):
             print(f"Telegram API error on {method}: {response.status_code} {body}")
     return response
 
 
 def send_message(chat_id, text, reply_markup=None):
+    """Returns the sent message's message_id, or None if the send failed."""
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     if reply_markup:
         payload["reply_markup"] = reply_markup
-    _call_telegram("sendMessage", payload)
+    response = _call_telegram("sendMessage", payload)
+    return response.json()["result"]["message_id"] if response.ok else None
+
+
+def delete_message(chat_id, message_id):
+    """Best-effort - a message that's already gone (deleted, or older than
+    Telegram's 48h delete window) is a HARMLESS_TELEGRAM_ERROR, not a bug."""
+    _call_telegram("deleteMessage", {"chat_id": chat_id, "message_id": message_id})
 
 
 def edit_message_markup(chat_id, message_id, reply_markup):
@@ -165,11 +199,21 @@ def handle_message(message):
         if not selected:
             set_categories(chat_id, [])
 
-        send_message(
+        # Re-running /start or /preferences used to send a brand new picker
+        # every time, leaving a growing pile of stale ones in the chat.
+        # Delete the last one we sent (if any) so there's always exactly one
+        # live picker instead.
+        old_message_id = get_last_prompt_message_id(chat_id)
+        if old_message_id is not None:
+            delete_message(chat_id, old_message_id)
+
+        new_message_id = send_message(
             chat_id,
             "Tap a category to turn it on. You'll only be notified about the ones you select:",
             reply_markup=build_keyboard(selected),
         )
+        if new_message_id is not None:
+            set_last_prompt_message_id(chat_id, new_message_id)
     else:
         send_message(chat_id, "Send /preferences to choose which job categories you get notified about.")
 
