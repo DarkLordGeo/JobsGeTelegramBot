@@ -100,6 +100,15 @@ This step is entirely optional - without it, `notify.py` just skips
 personalized delivery and the channel broadcast keeps working exactly the
 same either way.
 
+Since the channel/group itself always gets the same message for everyone
+(Telegram has no way to show different content to different members of a
+channel), the only way people find out DM preferences exist is a pinned
+message in the channel with a button that deep-links into the bot's
+`/start` flow. Post (or re-post, e.g. after an accidental unpin) that
+pinned message via Actions tab → "post channel instructions" → Run
+workflow (`telegram_bot/post_channel_instructions.py`, uses the same
+`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` secrets as everything else).
+
 The same two secrets also let the scrape workflow mirror its output into
 Redis under a plain string key, `jobs_data` (`scheduled_scripts/sync_to_redis.py`,
 run as a step in `test.yml`) - purely additive, alongside the existing

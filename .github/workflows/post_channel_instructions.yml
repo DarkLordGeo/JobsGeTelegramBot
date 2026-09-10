@@ -1,0 +1,25 @@
+name: post channel instructions
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v5
+
+      - name: setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12.6"
+
+      - name: install requests
+        run: pip install requests
+
+      - name: post and pin the categories instructions
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python telegram_bot/post_channel_instructions.py
